@@ -1,1 +1,0 @@
-import{r as t,l as r}from"./index-Bs0iRmx1.js";function s({onSuccess:e}){return t.useRef(null),t.useEffect(()=>{},[e]),r.jsx("p",{className:"text-center text-xs text-[#94A3B8]",children:"Set VITE_GOOGLE_CLIENT_ID for Google sign-in"})}export{s as G};
