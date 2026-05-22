@@ -3,11 +3,15 @@ import * as React from "react";
 import { toast } from "sonner";
 import { GlassCard, PageHeader, Pill } from "@/components/page";
 import { paymentApi, travelApi, type Payment } from "@/lib/api";
+import { openRazorpayCheckout } from "@/lib/razorpay";
+import { useAuth } from "@/lib/auth";
 
 export const Route = createFileRoute("/payments")({ component: Payments });
 
 function Payments() {
+  const { user } = useAuth();
   const [payments, setPayments] = React.useState<Payment[]>([]);
+  const [paying, setPaying] = React.useState(false);
 
   React.useEffect(() => {
     paymentApi
@@ -18,29 +22,56 @@ function Payments() {
 
   const payLatestBooking = async () => {
     try {
+      setPaying(true);
       const { bookings } = await travelApi.bookings(1);
       const b = bookings[0];
       if (!b) return toast.error("No bookings — book travel first");
+
       const data = await paymentApi.initiate({
         bookingId: b._id,
         amount: b.totalAmount,
-        method: "upi",
+        method: "card",
       });
-      toast.success(`Payment URL: ${data.paymentUrl}`);
-      const hist = await paymentApi.history();
-      setPayments(hist);
+
+      await openRazorpayCheckout({
+        key: data.razorpayKeyId,
+        orderId: data.order.id,
+        amount: data.order.amount,
+        currency: data.order.currency,
+        email: user?.email,
+        onSuccess: async (response) => {
+          await paymentApi.verify({
+            paymentId: data.payment._id,
+            razorpay_order_id: response.razorpay_order_id,
+            razorpay_payment_id: response.razorpay_payment_id,
+            razorpay_signature: response.razorpay_signature,
+          });
+          toast.success("Payment successful! Use test card 4111 1111 1111 1111 in Razorpay test mode.");
+          setPayments(await paymentApi.history());
+        },
+      });
     } catch (e) {
       toast.error(e instanceof Error ? e.message : "Payment failed");
+    } finally {
+      setPaying(false);
     }
   };
 
   return (
     <div className="space-y-6">
-      <PageHeader title="Payments" subtitle="Payment history from TripAI API." actions={
-        <button onClick={payLatestBooking} className="text-sm text-[var(--brand)] hover:underline">
-          Pay latest booking
-        </button>
-      } />
+      <PageHeader
+        title="Payments"
+        subtitle="Pay with Razorpay (test card: 4111 1111 1111 1111, any future expiry/CVV)."
+        actions={
+          <button
+            onClick={payLatestBooking}
+            disabled={paying}
+            className="text-sm text-[var(--brand)] hover:underline disabled:opacity-50"
+          >
+            {paying ? "Opening checkout…" : "Pay latest booking"}
+          </button>
+        }
+      />
       <GlassCard className="p-6 overflow-x-auto">
         <table className="w-full text-sm">
           <thead>

@@ -22,6 +22,12 @@ export const authApi = {
   login: (body: { email: string; password: string }) =>
     apiFetch<AuthPayload>("/api/auth/login", { method: "POST", body: JSON.stringify(body) }),
 
+  google: (credential: string) =>
+    apiFetch<AuthPayload>("/api/auth/google", {
+      method: "POST",
+      body: JSON.stringify({ credential }),
+    }),
+
   logout: () => apiFetch<null>("/api/auth/logout", { method: "POST" }),
 
   me: () => apiFetch<User>("/api/auth/me"),
@@ -104,7 +110,22 @@ export const paymentApi = {
   history: () => apiFetch<Payment[]>("/api/payments/history"),
 
   initiate: (body: Record<string, unknown>) =>
-    apiFetch<{ payment: Payment; paymentUrl: string }>("/api/payments/initiate", {
+    apiFetch<{
+      payment: Payment;
+      order: { id: string; amount: number; currency: string };
+      razorpayKeyId: string;
+    }>("/api/payments/initiate", {
+      method: "POST",
+      body: JSON.stringify(body),
+    }),
+
+  verify: (body: {
+    paymentId: string;
+    razorpay_order_id: string;
+    razorpay_payment_id: string;
+    razorpay_signature: string;
+  }) =>
+    apiFetch<Payment>("/api/payments/verify", {
       method: "POST",
       body: JSON.stringify(body),
     }),

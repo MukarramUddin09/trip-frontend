@@ -9,18 +9,28 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as SignupRouteImport } from './routes/signup'
 import { Route as SettingsRouteImport } from './routes/settings'
 import { Route as RidesRouteImport } from './routes/rides'
 import { Route as PlanTripRouteImport } from './routes/plan-trip'
 import { Route as PaymentsRouteImport } from './routes/payments'
+import { Route as LoginRouteImport } from './routes/login'
 import { Route as ItinerariesRouteImport } from './routes/itineraries'
 import { Route as HotelsRouteImport } from './routes/hotels'
 import { Route as FeedbackRouteImport } from './routes/feedback'
 import { Route as EntertainmentRouteImport } from './routes/entertainment'
+import { Route as DashboardRouteImport } from './routes/dashboard'
 import { Route as BookingRouteImport } from './routes/booking'
 import { Route as AlertsRouteImport } from './routes/alerts'
+import { Route as AdminRouteImport } from './routes/admin'
+import { Route as SplatRouteImport } from './routes/$'
 import { Route as IndexRouteImport } from './routes/index'
 
+const SignupRoute = SignupRouteImport.update({
+  id: '/signup',
+  path: '/signup',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const SettingsRoute = SettingsRouteImport.update({
   id: '/settings',
   path: '/settings',
@@ -39,6 +49,11 @@ const PlanTripRoute = PlanTripRouteImport.update({
 const PaymentsRoute = PaymentsRouteImport.update({
   id: '/payments',
   path: '/payments',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const LoginRoute = LoginRouteImport.update({
+  id: '/login',
+  path: '/login',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ItinerariesRoute = ItinerariesRouteImport.update({
@@ -61,6 +76,11 @@ const EntertainmentRoute = EntertainmentRouteImport.update({
   path: '/entertainment',
   getParentRoute: () => rootRouteImport,
 } as any)
+const DashboardRoute = DashboardRouteImport.update({
+  id: '/dashboard',
+  path: '/dashboard',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const BookingRoute = BookingRouteImport.update({
   id: '/booking',
   path: '/booking',
@@ -71,6 +91,16 @@ const AlertsRoute = AlertsRouteImport.update({
   path: '/alerts',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AdminRoute = AdminRouteImport.update({
+  id: '/admin',
+  path: '/admin',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SplatRoute = SplatRouteImport.update({
+  id: '/$',
+  path: '/$',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
@@ -79,102 +109,144 @@ const IndexRoute = IndexRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/$': typeof SplatRoute
+  '/admin': typeof AdminRoute
   '/alerts': typeof AlertsRoute
   '/booking': typeof BookingRoute
+  '/dashboard': typeof DashboardRoute
   '/entertainment': typeof EntertainmentRoute
   '/feedback': typeof FeedbackRoute
   '/hotels': typeof HotelsRoute
   '/itineraries': typeof ItinerariesRoute
+  '/login': typeof LoginRoute
   '/payments': typeof PaymentsRoute
   '/plan-trip': typeof PlanTripRoute
   '/rides': typeof RidesRoute
   '/settings': typeof SettingsRoute
+  '/signup': typeof SignupRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/$': typeof SplatRoute
+  '/admin': typeof AdminRoute
   '/alerts': typeof AlertsRoute
   '/booking': typeof BookingRoute
+  '/dashboard': typeof DashboardRoute
   '/entertainment': typeof EntertainmentRoute
   '/feedback': typeof FeedbackRoute
   '/hotels': typeof HotelsRoute
   '/itineraries': typeof ItinerariesRoute
+  '/login': typeof LoginRoute
   '/payments': typeof PaymentsRoute
   '/plan-trip': typeof PlanTripRoute
   '/rides': typeof RidesRoute
   '/settings': typeof SettingsRoute
+  '/signup': typeof SignupRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/$': typeof SplatRoute
+  '/admin': typeof AdminRoute
   '/alerts': typeof AlertsRoute
   '/booking': typeof BookingRoute
+  '/dashboard': typeof DashboardRoute
   '/entertainment': typeof EntertainmentRoute
   '/feedback': typeof FeedbackRoute
   '/hotels': typeof HotelsRoute
   '/itineraries': typeof ItinerariesRoute
+  '/login': typeof LoginRoute
   '/payments': typeof PaymentsRoute
   '/plan-trip': typeof PlanTripRoute
   '/rides': typeof RidesRoute
   '/settings': typeof SettingsRoute
+  '/signup': typeof SignupRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | '/$'
+    | '/admin'
     | '/alerts'
     | '/booking'
+    | '/dashboard'
     | '/entertainment'
     | '/feedback'
     | '/hotels'
     | '/itineraries'
+    | '/login'
     | '/payments'
     | '/plan-trip'
     | '/rides'
     | '/settings'
+    | '/signup'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
+    | '/$'
+    | '/admin'
     | '/alerts'
     | '/booking'
+    | '/dashboard'
     | '/entertainment'
     | '/feedback'
     | '/hotels'
     | '/itineraries'
+    | '/login'
     | '/payments'
     | '/plan-trip'
     | '/rides'
     | '/settings'
+    | '/signup'
   id:
     | '__root__'
     | '/'
+    | '/$'
+    | '/admin'
     | '/alerts'
     | '/booking'
+    | '/dashboard'
     | '/entertainment'
     | '/feedback'
     | '/hotels'
     | '/itineraries'
+    | '/login'
     | '/payments'
     | '/plan-trip'
     | '/rides'
     | '/settings'
+    | '/signup'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  SplatRoute: typeof SplatRoute
+  AdminRoute: typeof AdminRoute
   AlertsRoute: typeof AlertsRoute
   BookingRoute: typeof BookingRoute
+  DashboardRoute: typeof DashboardRoute
   EntertainmentRoute: typeof EntertainmentRoute
   FeedbackRoute: typeof FeedbackRoute
   HotelsRoute: typeof HotelsRoute
   ItinerariesRoute: typeof ItinerariesRoute
+  LoginRoute: typeof LoginRoute
   PaymentsRoute: typeof PaymentsRoute
   PlanTripRoute: typeof PlanTripRoute
   RidesRoute: typeof RidesRoute
   SettingsRoute: typeof SettingsRoute
+  SignupRoute: typeof SignupRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/signup': {
+      id: '/signup'
+      path: '/signup'
+      fullPath: '/signup'
+      preLoaderRoute: typeof SignupRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/settings': {
       id: '/settings'
       path: '/settings'
@@ -201,6 +273,13 @@ declare module '@tanstack/react-router' {
       path: '/payments'
       fullPath: '/payments'
       preLoaderRoute: typeof PaymentsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/login': {
+      id: '/login'
+      path: '/login'
+      fullPath: '/login'
+      preLoaderRoute: typeof LoginRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/itineraries': {
@@ -231,6 +310,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof EntertainmentRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/dashboard': {
+      id: '/dashboard'
+      path: '/dashboard'
+      fullPath: '/dashboard'
+      preLoaderRoute: typeof DashboardRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/booking': {
       id: '/booking'
       path: '/booking'
@@ -245,6 +331,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AlertsRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/admin': {
+      id: '/admin'
+      path: '/admin'
+      fullPath: '/admin'
+      preLoaderRoute: typeof AdminRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/$': {
+      id: '/$'
+      path: '/$'
+      fullPath: '/$'
+      preLoaderRoute: typeof SplatRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/': {
       id: '/'
       path: '/'
@@ -257,16 +357,21 @@ declare module '@tanstack/react-router' {
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  SplatRoute: SplatRoute,
+  AdminRoute: AdminRoute,
   AlertsRoute: AlertsRoute,
   BookingRoute: BookingRoute,
+  DashboardRoute: DashboardRoute,
   EntertainmentRoute: EntertainmentRoute,
   FeedbackRoute: FeedbackRoute,
   HotelsRoute: HotelsRoute,
   ItinerariesRoute: ItinerariesRoute,
+  LoginRoute: LoginRoute,
   PaymentsRoute: PaymentsRoute,
   PlanTripRoute: PlanTripRoute,
   RidesRoute: RidesRoute,
   SettingsRoute: SettingsRoute,
+  SignupRoute: SignupRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

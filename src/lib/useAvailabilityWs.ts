@@ -29,8 +29,13 @@ export function useAvailabilityWs(city: string, categories: string[] = ["hotel",
   React.useEffect(() => {
     if (!city) return;
     const ws = new WebSocket(WS_URL);
+    let cancelled = false;
 
     ws.onopen = () => {
+      if (cancelled) {
+        ws.close();
+        return;
+      }
       setConnected(true);
       ws.send(JSON.stringify({ type: "subscribe", city, categories }));
     };
@@ -47,7 +52,10 @@ export function useAvailabilityWs(city: string, categories: string[] = ["hotel",
     ws.onclose = () => setConnected(false);
     ws.onerror = () => setConnected(false);
 
-    return () => ws.close();
+    return () => {
+      cancelled = true;
+      if (ws.readyState === WebSocket.OPEN) ws.close();
+    };
   }, [city, categories.join(",")]);
 
   return { latest, connected };

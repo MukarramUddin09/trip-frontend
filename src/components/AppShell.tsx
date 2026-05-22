@@ -1,9 +1,10 @@
 import * as React from "react";
-import { Link, Outlet, useRouterState } from "@tanstack/react-router";
+import { Link, Outlet, useNavigate, useRouterState } from "@tanstack/react-router";
 import { AnimatePresence, motion } from "framer-motion";
 import {
   LayoutDashboard, Map, Train, Car, Hotel, Ticket, Wallet, ShieldAlert,
   BookOpen, Star, Settings, Menu, X, Bell, Search, Sun, Moon,
+  LogOut,
 } from "lucide-react";
 import { useTheme } from "@/lib/theme";
 import { useAuth } from "@/lib/auth";
@@ -11,7 +12,7 @@ import { Toaster } from "@/components/ui/sonner";
 import { cn } from "@/lib/utils";
 
 const NAV = [
-  { to: "/", label: "Dashboard", icon: LayoutDashboard },
+  { to: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
   { to: "/plan-trip", label: "Plan Trip", icon: Map },
   { to: "/booking", label: "Travel Booking", icon: Train },
   { to: "/rides", label: "Local Rides", icon: Car },
@@ -29,7 +30,7 @@ function NavList({ onNavigate }: { onNavigate?: () => void }) {
   return (
     <nav className="flex flex-col gap-1 p-3">
       {NAV.map(({ to, label, icon: Icon }) => {
-        const active = to === "/" ? path === "/" : path.startsWith(to);
+        const active = path === to || path.startsWith(`${to}/`);
         return (
           <Link
             key={to}
@@ -54,9 +55,16 @@ function NavList({ onNavigate }: { onNavigate?: () => void }) {
 
 export function AppShell() {
   const { theme, toggle, mounted } = useTheme();
-  const { user, loading: authLoading, error: authError } = useAuth();
+  const { user, loading: authLoading, error: authError, logout } = useAuth();
+  const navigate = useNavigate();
   const [mobileOpen, setMobileOpen] = React.useState(false);
   const path = useRouterState({ select: (s) => s.location.pathname });
+
+  const handleLogout = async () => {
+    await logout();
+    setMobileOpen(false);
+    navigate({ to: "/" });
+  };
 
   const initials = user?.name
     ?.split(" ")
@@ -82,8 +90,15 @@ export function AppShell() {
           <span className="font-display text-lg font-bold tracking-tight">TripAI</span>
         </div>
         <div className="flex-1 overflow-y-auto"><NavList /></div>
-        <div className="p-3 text-xs text-muted-foreground border-t border-sidebar-border">
-          v1.0 · Travel smarter with AI
+        <div className="border-t border-sidebar-border p-3">
+          <button
+            onClick={handleLogout}
+            className="flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-sidebar-foreground/80 transition-all hover:bg-[color-mix(in_oklab,var(--brand)_14%,transparent)] hover:text-sidebar-foreground"
+          >
+            <LogOut className="h-4.5 w-4.5 shrink-0" />
+            <span>Log Out</span>
+          </button>
+          <p className="mt-2 px-3 text-xs text-muted-foreground">v1.0 · Travel smarter with AI</p>
         </div>
       </aside>
 
@@ -111,6 +126,15 @@ export function AppShell() {
                 <button onClick={() => setMobileOpen(false)} className="p-2 rounded-md hover:bg-accent"><X className="h-5 w-5" /></button>
               </div>
               <div className="flex-1 overflow-y-auto"><NavList onNavigate={() => setMobileOpen(false)} /></div>
+              <div className="border-t border-sidebar-border p-3">
+                <button
+                  onClick={handleLogout}
+                  className="flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-sidebar-foreground/80 transition-all hover:bg-accent hover:text-sidebar-foreground"
+                >
+                  <LogOut className="h-4.5 w-4.5 shrink-0" />
+                  <span>Log Out</span>
+                </button>
+              </div>
             </motion.aside>
           </>
         )}

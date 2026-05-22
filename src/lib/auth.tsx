@@ -1,60 +1,29 @@
 /**
- * Auth context — auto-registers/logs in demo user and exposes session state app-wide.
+ * Auth context — Google OAuth + email/password via TripAI API.
  */
 
 import * as React from "react";
 import { ApiError, getToken, setToken } from "@/lib/api/client";
 import { authApi, type User } from "@/lib/api";
 
-const DEMO = {
-  name: "Aarav Sharma",
-  email: "demo@tripai.com",
-  password: "demo123456",
-  phone: "9876543210",
-};
+export const ADMIN_EMAIL = "mukarramuddin09@gmail.com";
 
 type AuthState = {
   user: User | null;
   loading: boolean;
   error: string | null;
+  isAdmin: boolean;
+  loginWithGoogle: (credential: string) => Promise<string>;
+  loginWithPassword: (email: string, password: string) => Promise<string>;
+  register: (body: { name: string; email: string; password: string; phone: string }) => Promise<string>;
   refresh: () => Promise<void>;
   logout: () => Promise<void>;
 };
 
-const AuthCtx = React.createContext<AuthState>({
-  user: null,
-  loading: true,
-  error: null,
-  refresh: async () => {},
-  logout: async () => {},
-});
+const AuthCtx = React.createContext<AuthState | null>(null);
 
-/**
- * Ensures a demo session exists (register if needed, then login).
- * @returns {Promise<string>} JWT token
- */
-async function ensureDemoSession(): Promise<string> {
-  try {
-    const { token } = await authApi.login({ email: DEMO.email, password: DEMO.password });
-    setToken(token);
-    return token;
-  } catch (e) {
-    if (e instanceof ApiError && e.status === 401) {
-      try {
-        const { token } = await authApi.register(DEMO);
-        setToken(token);
-        return token;
-      } catch (regErr) {
-        if (regErr instanceof ApiError && regErr.status === 409) {
-          throw new Error(
-            "Demo account exists with a different password. Drop the tripai DB or delete user demo@tripai.com",
-          );
-        }
-        throw regErr;
-      }
-    }
-    throw e;
-  }
+function redirectPath(user: User) {
+  return user.email?.toLowerCase() === ADMIN_EMAIL || user.role === "admin" ? "/admin" : "/dashboard";
 }
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
@@ -64,7 +33,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const refresh = React.useCallback(async () => {
     setError(null);
-    if (!getToken()) await ensureDemoSession();
+    if (!getToken()) {
+      setUser(null);
+      return;
+    }
     const me = await authApi.me();
     setUser(me);
   }, []);
@@ -73,10 +45,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     let cancelled = false;
     (async () => {
       try {
-        await refresh();
+        if (getToken()) await refresh();
       } catch (err) {
         if (!cancelled) {
-          setError(err instanceof Error ? err.message : "Could not connect to API. Is the backend running?");
+          setToken(null);
+          setError(err instanceof Error ? err.message : "Session expired");
         }
       } finally {
         if (!cancelled) setLoading(false);
@@ -87,6 +60,36 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     };
   }, [refresh]);
 
+  const applySession = React.useCallback(async (token: string, u: User) => {
+    setToken(token);
+    setUser(u);
+    return redirectPath(u);
+  }, []);
+
+  const loginWithGoogle = React.useCallback(
+    async (credential: string) => {
+      const { token, user: u } = await authApi.google(credential);
+      return applySession(token, u);
+    },
+    [applySession],
+  );
+
+  const loginWithPassword = React.useCallback(
+    async (email: string, password: string) => {
+      const { token, user: u } = await authApi.login({ email, password });
+      return applySession(token, u);
+    },
+    [applySession],
+  );
+
+  const register = React.useCallback(
+    async (body: { name: string; email: string; password: string; phone: string }) => {
+      const { token, user: u } = await authApi.register(body);
+      return applySession(token, u);
+    },
+    [applySession],
+  );
+
   const logout = React.useCallback(async () => {
     try {
       await authApi.logout();
@@ -95,18 +98,28 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
     setToken(null);
     setUser(null);
-    await ensureDemoSession();
-    await refresh();
-  }, [refresh]);
+  }, []);
 
   const value = React.useMemo(
-    () => ({ user, loading, error, refresh, logout }),
-    [user, loading, error, refresh, logout],
+    () => ({
+      user,
+      loading,
+      error,
+      isAdmin: user?.role === "admin" || user?.email?.toLowerCase() === ADMIN_EMAIL,
+      loginWithGoogle,
+      loginWithPassword,
+      register,
+      refresh,
+      logout,
+    }),
+    [user, loading, error, loginWithGoogle, loginWithPassword, register, refresh, logout],
   );
 
   return <AuthCtx.Provider value={value}>{children}</AuthCtx.Provider>;
 }
 
 export function useAuth() {
-  return React.useContext(AuthCtx);
+  const ctx = React.useContext(AuthCtx);
+  if (!ctx) throw new Error("useAuth must be used within AuthProvider");
+  return ctx;
 }
